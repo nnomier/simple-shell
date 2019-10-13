@@ -7,7 +7,7 @@
 define MAX_SIZE 1024;
 
 
-void readCMD(char *input)
+char* readCMD(char *input)
 {
   fgets(input, MAX_SIZE , stdin);
 
@@ -20,6 +20,7 @@ void readCMD(char *input)
      break;
    }
  }
+ return input;
 }
 
 public int findAmpersand(char str[]){
@@ -51,6 +52,10 @@ public void executeCMD(char* params[]){
   else if(pid==0){
     printf("\n");
     execvp(params[0], params);
+  }
+  else{
+    wait(NULL);
+    printf("Parent\n", );
   }
 
 }
