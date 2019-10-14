@@ -7,12 +7,9 @@
 #define MAX_SIZE 1024
 FILE *f;
 
-
-
 void readCMD(char input[])
 {
     fgets(input, MAX_SIZE , stdin);
-  //  scanf("%[^\n]%*c", input);
   int c;
   while (*input != '\n' &&  *input != '\0') {
             ++input;
@@ -23,12 +20,11 @@ void readCMD(char input[])
             while ((c = getchar()) != '\n' && c != EOF)
                 continue;
         }
-
 }
 
 void handler(int sig)
-{  f = fopen("logfile.log", "a+"); // a+ (create + append) option will allow appending which is useful in a log file
-
+{
+  f = fopen("logfile.log", "a+");
   pid_t pid;
 
   pid = wait(NULL);
@@ -39,7 +35,6 @@ void handler(int sig)
       fprintf(f,"Pid %d exited.\n", pid);
   }
   fclose(f);
-
 
 }
 
@@ -75,12 +70,9 @@ void splitParameters(char *input,char *params[])
   for(;index<10;index++){
     params[index]=NULL;
   }
-
 }
 
- void changeDirectory(char input [],char* params[]){
-
-    splitParameters(input,params);
+ void changeDirectory(char* params[]){
     char  *gdir;
     char  *dir;
     char  *to;
@@ -94,35 +86,37 @@ void splitParameters(char *input,char *params[])
    if (chdir(to) == -1) {
            perror("error occured");}
            else{
-             printf("your are now at %s%s%s\n",gdir,dir,to );
+             printf("your are now at %s\n", getcwd(buf, sizeof(buf)));
            }
  }
 
- void executeCMD(char input[],char* params[]){
+ void executeCMD(char input[],char* params[],int ampersand){
 
+   if(ampersand)
+    signal(SIGCHLD, handler);
 
-
-   int Ampersand = findAmpersand(input);
-   splitParameters(input,params);
   // Forking a child
    pid_t pid = fork();
    int status;
-   signal(SIGCHLD, handler);
 
    if(pid<0)
     printf("\n Operation Failed");
   else if(pid==0){
     execvp(params[0], params);
+    exit(0);
   }
   else{
-    if(!Ampersand){
+    if(!ampersand){
     waitpid(pid,&status,0);
+    f = fopen("logfile.log", "a+");
+    fprintf(f,"Pid %d exited.\n", pid);
+    fclose(f);
+    }
   }
-  }
-
 }
 
 int main(int argc, char const *argv[]) {
+   f = fopen("logfile.log", "w");
 
   char input[MAX_SIZE];
   char *params[10];
@@ -133,11 +127,15 @@ int main(int argc, char const *argv[]) {
     if(!strcmp("exit",input)){
       exit(0);
     }
-    // if (!strcmp(params[0], "cd")){
-    //       changeDirectory(input,params);
-    //       continue;
-    //     }
-    executeCMD(input,params);
+
+    int ampersand = findAmpersand(input);
+    splitParameters(input,params);
+    if (!strcmp(params[0], "cd")){
+          changeDirectory(params);
+          continue;
+        }
+    executeCMD(input,params,ampersand);
   }
+  fclose(f);
   return 0;
 }
