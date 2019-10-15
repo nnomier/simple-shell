@@ -97,8 +97,18 @@ void splitParameters(char *input,char *params[])
    if (chdir(to) == -1) {
            perror("error occured");}
            else{
-             printf("your are now at %s\n", getcwd(buf, sizeof(buf)));
+          //   printf("your are now at %s\n", getcwd(buf, sizeof(buf)));
            }
+ }
+
+//A function to print directory
+ void printDirectory()
+ {
+   char buf[MAX_SIZE];
+   printf("\033[1;31m" );
+   printf(" %s >> ", getcwd(buf, sizeof(buf)));
+   printf("\033[0m" );
+
  }
 
 //A function to execute commands by forking a new child
@@ -135,7 +145,8 @@ int main(int argc, char const *argv[]) {
   char *params[10];
 
   while(1){
-    printf("SHELL > ");
+  //  printf("SHELL > ");
+    printDirectory();
     //1- Read input from user
     readCMD(input);
 
